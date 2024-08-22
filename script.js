@@ -26,16 +26,32 @@ document.getElementById('processBtn').addEventListener('click', function () {
 
                 const output = document.getElementById('output');
                 output.innerHTML = '';
+                const zip = new JSZip();
 
                 Object.keys(logsDictionary).forEach(podId => {
-                    const blob = new Blob([logsDictionary[podId].join('\n')], { type: 'text/plain' });
+                    const logContent = logsDictionary[podId].join('\n');
+                    const blob = new Blob([logContent], { type: 'text/plain' });
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(blob);
                     link.download = `logs-${podId}.txt`;
                     link.textContent = `Descargar logs-${podId}.txt`;
                     output.appendChild(link);
                     output.appendChild(document.createElement('br'));
+
+                    // Añadir el archivo al ZIP
+                    zip.file(`logs-${podId}.txt`, logContent);
                 });
+
+                document.getElementById('downloadAllBtn').style.display = 'block';
+                document.getElementById('downloadAllBtn').addEventListener('click', function () {
+                    zip.generateAsync({ type: 'blob' }).then(function (content) {
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(content);
+                        link.download = 'logs.zip';
+                        link.click();
+                    });
+                });
+
             } catch (error) {
                 console.error("Error al procesar el archivo JSON:", error);
                 alert("Error al procesar el archivo JSON. Asegúrate de que el archivo es válido.");
